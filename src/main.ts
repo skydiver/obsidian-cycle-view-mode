@@ -1,19 +1,13 @@
-import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { type IconName, MarkdownView, Plugin, setIcon } from 'obsidian';
 
 type ViewMode = 'reading' | 'live-preview' | 'source';
 
 const MODE_CYCLE: ViewMode[] = ['reading', 'live-preview', 'source'];
 
-const MODE_DISPLAY: Record<ViewMode, string> = {
-  reading: '👁 Reading',
-  'live-preview': '✏ Live Preview',
-  source: '<> Source',
-};
-
-const MODE_NOTICE: Record<ViewMode, string> = {
-  reading: 'Reading',
-  'live-preview': 'Live Preview',
-  source: 'Source Mode',
+const MODE_ICON: Record<ViewMode, IconName> = {
+  reading: 'book-open',
+  'live-preview': 'edit-3',
+  source: 'code-2',
 };
 
 export default class CycleViewMode extends Plugin {
@@ -52,9 +46,7 @@ export default class CycleViewMode extends Plugin {
 
   private getCurrentMode(view: MarkdownView): ViewMode {
     const mode = view.getMode();
-    if (mode === 'preview') {
-      return 'reading';
-    }
+    if (mode === 'preview') return 'reading';
     const state = view.getState();
     return state.source ? 'source' : 'live-preview';
   }
@@ -79,14 +71,13 @@ export default class CycleViewMode extends Plugin {
       },
     });
 
-    new Notice(`Switched to ${MODE_NOTICE[next]}`);
     this.updateStatusBar();
   }
 
   private updateStatusBar(): void {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!view) {
-      this.statusBarEl.setText('');
+      this.statusBarEl.empty();
       this.lastMode = null;
       return;
     }
@@ -95,6 +86,7 @@ export default class CycleViewMode extends Plugin {
     if (current === this.lastMode) return;
 
     this.lastMode = current;
-    this.statusBarEl.setText(MODE_DISPLAY[current]);
+    this.statusBarEl.empty();
+    setIcon(this.statusBarEl, MODE_ICON[current]);
   }
 }
