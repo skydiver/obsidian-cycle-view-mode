@@ -4,11 +4,15 @@ type ViewMode = 'reading' | 'live-preview' | 'source';
 
 interface CycleViewModeSettings {
   hideNativeIndicator: boolean;
+  replaceNativeIndicator: boolean;
 }
 
 const DEFAULT_SETTINGS: CycleViewModeSettings = {
   hideNativeIndicator: true,
+  replaceNativeIndicator: true,
 };
+
+const NATIVE_SELECTOR = '.status-bar-item.plugin-editor-status';
 
 const MODE_CYCLE: ViewMode[] = ['reading', 'live-preview', 'source'];
 
@@ -35,6 +39,8 @@ export default class CycleViewMode extends Plugin {
     this.registerDomEvent(this.statusBarEl, 'click', () => {
       this.cycleMode();
     });
+
+    this.repositionStatusBarItem();
 
     this.addCommand({
       id: 'cycle-view-mode',
@@ -70,10 +76,20 @@ export default class CycleViewMode extends Plugin {
   async saveSettings() {
     await this.saveData(this.settings);
     this.applyBodyClass();
+    this.repositionStatusBarItem();
   }
 
   applyBodyClass() {
     document.body.toggleClass(BODY_CLASS, this.settings.hideNativeIndicator);
+  }
+
+  repositionStatusBarItem() {
+    if (!this.settings.replaceNativeIndicator) return;
+
+    const nativeEl = document.querySelector(NATIVE_SELECTOR);
+    if (nativeEl) {
+      nativeEl.after(this.statusBarEl);
+    }
   }
 
   private getCurrentMode(view: MarkdownView): ViewMode {
@@ -143,5 +159,26 @@ class CycleViewModeSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         });
       });
+
+    const positionSetting = new Setting(this.containerEl)
+      .setName('Replace native indicator position')
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.replaceNativeIndicator).onChange(async (value) => {
+          this.plugin.settings.replaceNativeIndicator = value;
+          await this.plugin.saveSettings();
+          updatePositionDesc();
+        });
+      });
+
+    const updatePositionDesc = () => {
+      const frag = document.createDocumentFragment();
+      frag.appendText('Place the cycling icon where the native view mode indicator is.');
+      if (!this.plugin.settings.replaceNativeIndicator) {
+        frag.createEl('br');
+        frag.appendText('Reload required to restore original position.');
+      }
+      positionSetting.setDesc(frag);
+    };
+    updatePositionDesc();
   }
 }
