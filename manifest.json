@@ -1,0 +1,10 @@
+{
+  "id": "cycle-view-mode",
+  "name": "Cycle View Mode",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Cycle between Reading, Live Preview, and Source Mode with a status bar button or hotkey.",
+  "author": "Martín M.",
+  "authorUrl": "https://github.com/skydiver",
+  "isDesktopOnly": false
+}

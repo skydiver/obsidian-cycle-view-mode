@@ -1,0 +1,35 @@
+{
+  "name": "obsidian-cycle-view-mode",
+  "version": "1.0.0",
+  "description": "Cycle between Reading, Live Preview, and Source Mode with a status bar button or hotkey.",
+  "main": "main.js",
+  "author": "Martín M.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skydiver/obsidian-cycle-view-mode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skydiver/obsidian-cycle-view-mode/issues"
+  },
+  "homepage": "https://github.com/skydiver/obsidian-cycle-view-mode#readme",
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "view-mode"
+  ],
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.24.0",
+    "obsidian": "latest",
+    "tslib": "^2.7.0",
+    "typescript": "^5.6.0"
+  }
+}
