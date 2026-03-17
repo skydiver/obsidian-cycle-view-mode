@@ -1,6 +1,14 @@
-import { type IconName, MarkdownView, Plugin, setIcon } from 'obsidian';
+import { type IconName, MarkdownView, Plugin, PluginSettingTab, Setting, setIcon } from 'obsidian';
 
 type ViewMode = 'reading' | 'live-preview' | 'source';
+
+interface CycleViewModeSettings {
+  hideNativeIndicator: boolean;
+}
+
+const DEFAULT_SETTINGS: CycleViewModeSettings = {
+  hideNativeIndicator: true,
+};
 
 const MODE_CYCLE: ViewMode[] = ['reading', 'live-preview', 'source'];
 
@@ -10,11 +18,18 @@ const MODE_ICON: Record<ViewMode, IconName> = {
   source: 'code-2',
 };
 
+const BODY_CLASS = 'cycle-view-mode-hide-native';
+
 export default class CycleViewMode extends Plugin {
+  settings!: CycleViewModeSettings;
   private statusBarEl!: HTMLElement;
   private lastMode: ViewMode | null = null;
 
   async onload() {
+    await this.loadSettings();
+    this.addSettingTab(new CycleViewModeSettingTab(this));
+    this.applyBodyClass();
+
     this.statusBarEl = this.addStatusBarItem();
     this.statusBarEl.addClass('mod-clickable');
     this.registerDomEvent(this.statusBarEl, 'click', () => {
@@ -42,6 +57,23 @@ export default class CycleViewMode extends Plugin {
     );
 
     this.updateStatusBar();
+  }
+
+  onunload() {
+    document.body.removeClass(BODY_CLASS);
+  }
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+    this.applyBodyClass();
+  }
+
+  applyBodyClass() {
+    document.body.toggleClass(BODY_CLASS, this.settings.hideNativeIndicator);
   }
 
   private getCurrentMode(view: MarkdownView): ViewMode {
@@ -88,5 +120,28 @@ export default class CycleViewMode extends Plugin {
     this.lastMode = current;
     this.statusBarEl.empty();
     setIcon(this.statusBarEl, MODE_ICON[current]);
+  }
+}
+
+class CycleViewModeSettingTab extends PluginSettingTab {
+  private plugin: CycleViewMode;
+
+  constructor(plugin: CycleViewMode) {
+    super(plugin.app, plugin);
+    this.plugin = plugin;
+  }
+
+  display() {
+    this.containerEl.empty();
+
+    new Setting(this.containerEl)
+      .setName('Hide native view mode indicator')
+      .setDesc("Hide Obsidian's built-in view mode status bar item.")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.hideNativeIndicator).onChange(async (value) => {
+          this.plugin.settings.hideNativeIndicator = value;
+          await this.plugin.saveSettings();
+        });
+      });
   }
 }

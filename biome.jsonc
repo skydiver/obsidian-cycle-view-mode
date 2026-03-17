@@ -7,6 +7,7 @@
       "**",
       "!**/node_modules/**",
       "!**/main.js",
+      "!**/data.json",
       "!**/package-lock.json",
       "!**/.DS_Store"
     ]
